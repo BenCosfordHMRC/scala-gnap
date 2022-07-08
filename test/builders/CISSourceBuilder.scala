@@ -16,7 +16,7 @@
 
 package builders
 
-import models.get.{CISDeductions, CISSource, GetPeriodData}
+import example.models.get.{CISDeductions, CISSource, GetPeriodData}
 
 object CISSourceBuilder {
 

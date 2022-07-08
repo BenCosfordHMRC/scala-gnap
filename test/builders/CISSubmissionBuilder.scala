@@ -16,8 +16,8 @@
 
 package builders
 
-import models.PeriodData
-import models.submission.CISSubmission
+import example.models.PeriodData
+import example.models.submission.CISSubmission
 
 object CISSubmissionBuilder {
 

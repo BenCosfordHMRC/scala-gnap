@@ -22,8 +22,14 @@ object AppDependencies {
   private val bootstrapPlay28Version = "5.24.0"
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"                   %%  "bootstrap-backend-play-28"  % bootstrapPlay28Version,
-    "com.fasterxml.jackson.module"  %%  "jackson-module-scala"       % "2.12.2"
+    "uk.gov.hmrc"                   %%  "bootstrap-backend-play-28"       % bootstrapPlay28Version,
+    "com.fasterxml.jackson.module"  %%  "jackson-module-scala"            % "2.12.2",
+    "com.nimbusds"                  %  "nimbus-jose-jwt"                  % "9.4.1",
+    "org.apache.commons"            % "commons-lang3"                     % "3.12.0",
+    "org.bouncycastle"              %  "bcpkix-jdk15on"                   % "1.60",
+    "org.greenbytes.http"           %  "structured-fields"                % "0.4",
+    "com.sailpoint"                 %  "ietf-subject-identifiers-model"   % "0.1.0",
+    "io.bspk"                       %  "httpsig"                          % "0.0.4",
   )
 
   val test: Seq[ModuleID] = Seq(

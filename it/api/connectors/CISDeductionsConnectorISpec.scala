@@ -18,10 +18,11 @@ package api.connectors
 
 import builders.CISSourceBuilder.{contractorCISSource, customerCISSource}
 import com.github.tomakehurst.wiremock.http.HttpHeader
-import config.MockAppConfig
-import connectors.CISDeductionsConnector
+import example.config.MockAppConfig
+import example.connectors.CISDeductionsConnector
+import example.models.{CreateCISDeductions, CreateCISDeductionsApi, CreateCISDeductionsSuccess, DesErrorBodyModel, DesErrorModel, PeriodData, UpdateCISDeductions}
+import example.models.get.{CISDeductions, CISSource, GetPeriodData}
 import models._
-import models.get.{CISDeductions, CISSource, GetPeriodData}
 import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, SessionId}

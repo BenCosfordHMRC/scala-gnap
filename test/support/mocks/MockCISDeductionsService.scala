@@ -16,11 +16,11 @@
 
 package support.mocks
 
-import models.DesErrorModel
-import models.submission.CISSubmission
+import example.models.DesErrorModel
+import example.models.submission.CISSubmission
+import example.services.CISDeductionsService
 import org.scalamock.handlers.{CallHandler3, CallHandler5}
 import org.scalamock.scalatest.MockFactory
-import services.CISDeductionsService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}

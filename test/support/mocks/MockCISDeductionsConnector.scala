@@ -16,12 +16,12 @@
 
 package support.mocks
 
-import connectors.CISDeductionsConnector
-import connectors.httpParsers.CreateCISDeductionsParser.CreateCISDeductionsResponse
-import connectors.httpParsers.DeleteCISDeductionsHttpParser.DeleteCISDeductionsResponse
-import connectors.httpParsers.GetCISDeductionsHttpParser.GetCISDeductionsResponse
-import connectors.httpParsers.UpdateCISDeductionsHttpParser.UpdateCISDeductionsResponse
-import models.{CreateCISDeductions, CreateCISDeductionsSuccess, DesErrorModel, UpdateCISDeductions}
+import example.connectors.CISDeductionsConnector
+import example.connectors.httpParsers.CreateCISDeductionsParser.CreateCISDeductionsResponse
+import example.connectors.httpParsers.DeleteCISDeductionsHttpParser.DeleteCISDeductionsResponse
+import example.connectors.httpParsers.GetCISDeductionsHttpParser.GetCISDeductionsResponse
+import example.connectors.httpParsers.UpdateCISDeductionsHttpParser.UpdateCISDeductionsResponse
+import example.models.{CreateCISDeductions, CreateCISDeductionsSuccess, DesErrorModel, UpdateCISDeductions}
 import org.scalamock.handlers.{CallHandler3, CallHandler4}
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier

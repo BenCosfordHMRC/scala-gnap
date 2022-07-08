@@ -16,13 +16,23 @@
 
 package data.api
 
-import data.{InteractFinish, InteractStart}
+sealed trait TokenFlag
+case object BEARER extends TokenFlag
+case object SPLIT extends TokenFlag
 
-case class InteractRequest(finish: Option[InteractFinish] = None,
-                           start: Set[InteractStart] = Set.empty,
-                           hints: Option[InteractHintRequest] = None
-                          )
+case class AccessTokenRequest(
+                               access: Seq[HandleAwareField[RequestedResource]],
+                               label: Option[String] = None,
+                               flags: Set[TokenFlag] = Set.empty
+                             ){
 
-object InteractRequest {
+  def isBearer: Boolean = flags.contains(BEARER)
+}
 
+object AccessTokenRequest {
+  def apply(references: Seq[String]): AccessTokenRequest = {
+    AccessTokenRequest(
+      access = references.toStream.map(HandleAwareField[RequestedResource])
+    )
+  }
 }

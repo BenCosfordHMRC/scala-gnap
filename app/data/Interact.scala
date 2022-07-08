@@ -28,46 +28,31 @@ case object USER_CODE extends InteractStart
 case object USER_CODE_URI extends InteractStart
 
 case class Interact(startMethods: Set[InteractStart] = Set.empty,
-                    interactionUrl: URI,
-                    appUrl: URI,
-                    interactId: String,
-                    serverNonce: String,
-                    clientNonce: String,
-                    callbackUri: URI,
-                    interactRef: String,
-                    standaloneUserCode: String,
-                    userCode: String,
-                    userCodeUrl: URI,
-                    callbackMethod: CallbackMethod,
-                    callbackHashMethod: HashMethod
+                    interactionUrl: Option[URI] = None,
+                    appUrl: Option[URI] = None,
+                    interactId: Option[String] = None,
+                    serverNonce: Option[String] = None,
+                    clientNonce: Option[String] = None,
+                    callbackUri: Option[URI] = None,
+                    interactRef: Option[String] = None,
+                    standaloneUserCode: Option[String] = None,
+                    userCode: Option[String] = None,
+                    userCodeUrl: Option[URI] = None,
+                    callbackMethod: Option[CallbackMethod] = None,
+                    callbackHashMethod: Option[HashMethod] = None
                    )
 
 object Interact {
-  def apply(interact: InteractRequest): Interact ={
+  def apply(interact: InteractRequest): Interact = {
 
     val interactFinish = interact.finish
 
     Interact(
       startMethods = interact.start,
-      interactionUrl = ???,
-      appUrl = ???,
-      interactId = ???,
-      serverNonce = ???,
-      clientNonce = interactFinish.map(_.nonce),
-      callbackUri = interactFinish.map(_.uri),
-      interactRef = ???,
-      standaloneUserCode = ???,
-      userCode = ???,
-      userCodeUrl = ???,
+      clientNonce = interactFinish.flatMap(_.nonce),
+      callbackUri = interactFinish.flatMap(_.uri),
       callbackMethod = interactFinish.map(_.method),
-      callbackHashMethod = interac
+      callbackHashMethod = interactFinish.map(_.hashMethod)
     )
-
-
-//      .setStartMethods(Optional.ofNullable(interact.getStart()).orElse(Collections.emptySet()))
-//      .setCallbackMethod(interactFinish.map(InteractFinish::getMethod).orElse(null))
-//      .setCallbackUri(interactFinish.map(InteractFinish::getUri).orElse(null))
-//      .setClientNonce(interactFinish.map(InteractFinish::getNonce).orElse(null))
-//      .setCallbackHashMethod(interactFinish.map(InteractFinish::getHashMethod).orElse(null));
   }
 }

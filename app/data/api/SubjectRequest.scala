@@ -16,13 +16,10 @@
 
 package data.api
 
-import data.{InteractFinish, InteractStart}
+import com.sailpoint.ietf.subjectidentifiers.model.SubjectIdentifierFormats
+import data.AssertionFormat
 
-case class InteractRequest(finish: Option[InteractFinish] = None,
-                           start: Set[InteractStart] = Set.empty,
-                           hints: Option[InteractHintRequest] = None
-                          )
+case class SubjectRequest(subIdFormats: Seq[SubjectIdentifierFormats],
+                          assertionFormats: Seq[AssertionFormat])
 
-object InteractRequest {
 
-}

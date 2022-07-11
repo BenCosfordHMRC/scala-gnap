@@ -21,7 +21,7 @@ import crypto.HashMethod
 import java.net.URI
 
 sealed trait CallbackMethod
-case object REDIRECT extends CallbackMethod
+case object _REDIRECT extends CallbackMethod
 case object PUSH extends CallbackMethod
 
 case class InteractFinish(uri: Option[URI] = None,
@@ -31,7 +31,7 @@ case class InteractFinish(uri: Option[URI] = None,
 
 object InteractFinish {
 
-  def redirect: InteractFinish = InteractFinish(method = REDIRECT)
+  def redirect: InteractFinish = InteractFinish(method = _REDIRECT)
 
   def pushback: InteractFinish = InteractFinish(method = PUSH)
 }

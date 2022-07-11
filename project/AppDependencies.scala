@@ -30,6 +30,7 @@ object AppDependencies {
     "org.greenbytes.http"           %  "structured-fields"                % "0.4",
     "com.sailpoint"                 %  "ietf-subject-identifiers-model"   % "0.1.0",
     "io.bspk"                       %  "httpsig"                          % "0.0.4",
+    "org.apache.tomcat.embed"       % "tomcat-embed-core"                 % "9.0.46"
   )
 
   val test: Seq[ModuleID] = Seq(

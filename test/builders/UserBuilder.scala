@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package example.common
+package builders
 
-object CISSource {
-  val CUSTOMER = "customer"
-  val CONTRACTOR = "contractor"
+import example.models.User
+import play.api.mvc.AnyContentAsEmpty
+import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.AffinityGroup.Agent
+
+object UserBuilder {
+
+   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
+
+  def aUser: User[AnyContentAsEmpty.type] = User(Agent)(fakeRequest)
 }

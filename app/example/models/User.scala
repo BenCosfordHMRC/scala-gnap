@@ -17,7 +17,9 @@
 package example.models
 
 import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 
-case class User[T](mtditid: String, arn: Option[String])(implicit val request: Request[T]) extends WrappedRequest[T](request) {
-  def isAgent: Boolean = arn.nonEmpty
+case class User[T](affinityGroup: AffinityGroup)(implicit val request: Request[T]) extends WrappedRequest[T](request) {
+  def isAgent: Boolean = affinityGroup == Agent
 }

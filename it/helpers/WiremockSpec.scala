@@ -31,7 +31,7 @@ import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import scala.concurrent.ExecutionContext
 
 trait WiremockSpec extends PlaySpec with BeforeAndAfterEach with BeforeAndAfterAll with GuiceOneServerPerSuite
-  with FutureAwaits with DefaultAwaitTimeout with WiremockStubHelpers with AuthStub {
+  with FutureAwaits with DefaultAwaitTimeout with WiremockStubHelpers {
   self: PlaySpec =>
 
   val wireMockPort = 11111

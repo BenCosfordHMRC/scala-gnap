@@ -16,10 +16,10 @@
 
 package example.models
 
-import example.models.User
+import example.utils.TestUtils
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
-import example.utils.TestUtils
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual}
 
 class UserSpec extends TestUtils {
 
@@ -28,7 +28,7 @@ class UserSpec extends TestUtils {
     "return true" when {
 
       "user has an arn" in {
-        User[AnyContent]("23456789", Some("123456789"))(FakeRequest()).isAgent mustBe true
+        User[AnyContent](Agent)(FakeRequest()).isAgent mustBe true
       }
 
     }
@@ -36,7 +36,7 @@ class UserSpec extends TestUtils {
     "return false" when {
 
       "user does not have an arn" in {
-        User[AnyContent]("23456789", None)(FakeRequest()).isAgent mustBe false
+        User[AnyContent](Individual)(FakeRequest()).isAgent mustBe false
       }
 
     }

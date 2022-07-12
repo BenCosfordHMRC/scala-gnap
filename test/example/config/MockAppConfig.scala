@@ -16,7 +16,6 @@
 
 package example.config
 
-import example.config.AppConfig
 import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -25,8 +24,5 @@ class MockAppConfig extends MockFactory {
 
   def config(desHost: String): AppConfig = new AppConfig(mock[Configuration], mock[ServicesConfig]) {
     val wireMockPort = 11111
-    override lazy val desBaseUrl: String = s"http://$desHost:$wireMockPort"
-    override lazy val authorisationToken: String = "authorisation-token"
-    override lazy val environment: String = "environment"
   }
 }

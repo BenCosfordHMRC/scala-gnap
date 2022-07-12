@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package example.utils
+package example.controllers
 
-import example.models.CISDates
-import example.utils.CISTaxYearHelper
+import example.utils.TestUtils
+import play.api.http.Status.OK
 
-class CISTaxYearHelperSpec extends TestUtils {
+class HelloWorldControllerSpec extends TestUtils {
 
-  "CISTaxYearHelper" should {
+  val controller = new HelloWorldController(authorisedAction, mockControllerComponents)
 
-    "return a cis dates model containing the correct dates when a tax year is passed" in {
-      val taxYear = 2020
-      val result = CISTaxYearHelper.cisTaxYearConverter(taxYear)
-      result mustBe CISDates(fromDate = "2019-04-06", toDate = "2020-04-05")
+  "calling .helloWorld" should {
+    "when user is individual" should {
+      "return an OK 200 response with hello individual" in {
+        val result = {
+          mockAuth()
+          controller.helloWorld()(fakeRequest)
+        }
+        status(result) mustBe OK
+        bodyOf(result) mustBe "Hello Individual"
+      }
     }
   }
 }

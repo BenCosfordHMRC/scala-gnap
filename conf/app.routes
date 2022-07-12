@@ -1,8 +1,5 @@
 # microservice specific routes
 
-GET     /income-tax/nino/:nino/sources                      controllers.GetCISDeductionsController.getCISDeductions(nino: String, taxYear: Int)
+GET     /hello                      example.controllers.HelloWorldController.helloWorld()
 
-DELETE  /income-tax/nino/:nino/sources/:submissionId        controllers.DeleteCISDeductionsSubmissionController.deleteCISDeductionsSubmission(nino: String, taxYear: Int, submissionId: String)
-
-POST    /income-tax/nino/:nino/sources                      controllers.CreateUpdateCisDeductionsController.postCISDeductions(nino: String, taxYear: Int)
 

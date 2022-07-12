@@ -20,7 +20,6 @@ import akka.actor.ActorSystem
 import akka.stream.SystemMaterializer
 import com.codahale.metrics.SharedMetricRegistries
 import example.actions.AuthorisedAction
-import example.common.{EnrolmentIdentifiers, EnrolmentKeys}
 import example.config.AppConfig
 import example.services.AuthService
 import org.scalamock.scalatest.MockFactory
@@ -34,7 +33,6 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.syntax.retrieved.authSyntaxForRetrieved
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration.Duration
@@ -53,18 +51,18 @@ trait TestUtils extends AnyWordSpec with Matchers with MockFactory with GuiceOne
 
   def await[T](awaitable: Awaitable[T]): T = Await.result(awaitable, Duration.Inf)
 
-  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders("mtditid" -> "1234567890")
-  val fakeRequestWithMtditid: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSession("MTDITID" -> "1234567890")
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   implicit val emptyHeaderCarrier: HeaderCarrier = HeaderCarrier()
 
   val mockAppConfig: AppConfig = app.injector.instanceOf[AppConfig]
+
   implicit val mockControllerComponents: ControllerComponents = Helpers.stubControllerComponents()
   implicit val mockExecutionContext: ExecutionContext = ExecutionContext.Implicits.global
   implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
   implicit val mockAuthService: AuthService = new AuthService(mockAuthConnector)
+
   val defaultActionBuilder: DefaultActionBuilder = DefaultActionBuilder(mockControllerComponents.parsers.default)
   val authorisedAction = new AuthorisedAction()(mockAuthConnector, defaultActionBuilder, mockControllerComponents)
-
 
   def status(awaitable: Future[Result]): Int = await(awaitable).header.status
 
@@ -73,37 +71,20 @@ trait TestUtils extends AnyWordSpec with Matchers with MockFactory with GuiceOne
     await(awaited.body.consumeData.map(_.utf8String))
   }
 
-  val individualEnrolments: Enrolments = Enrolments(Set(
-    Enrolment(EnrolmentKeys.Individual, Seq(EnrolmentIdentifier(EnrolmentIdentifiers.individualId, "1234567890")), "Activated"),
-    Enrolment(EnrolmentKeys.nino, Seq(EnrolmentIdentifier(EnrolmentIdentifiers.nino, "1234567890")), "Activated")))
-
   //noinspection ScalaStyle
-  def mockAuth(enrolments: Enrolments = individualEnrolments) = {
+  def mockAuth() = {
 
     (mockAuthConnector.authorise(_: Predicate, _: Retrieval[_])(_: HeaderCarrier, _: ExecutionContext))
       .expects(*, Retrievals.affinityGroup, *, *)
       .returning(Future.successful(Some(AffinityGroup.Individual)))
-
-    (mockAuthConnector.authorise(_: Predicate, _: Retrieval[_])(_: HeaderCarrier, _: ExecutionContext))
-      .expects(*, Retrievals.allEnrolments and Retrievals.confidenceLevel, *, *)
-      .returning(Future.successful(enrolments and ConfidenceLevel.L200))
   }
 
-  val agentEnrolments: Enrolments = Enrolments(Set(
-    Enrolment(EnrolmentKeys.Individual, Seq(EnrolmentIdentifier(EnrolmentIdentifiers.individualId, "1234567890")), "Activated"),
-    Enrolment(EnrolmentKeys.Agent, Seq(EnrolmentIdentifier(EnrolmentIdentifiers.agentReference, "0987654321")), "Activated")
-  ))
-
   //noinspection ScalaStyle
-  def mockAuthAsAgent(enrolments: Enrolments = agentEnrolments) = {
+  def mockAuthAsAgent() = {
 
     (mockAuthConnector.authorise(_: Predicate, _: Retrieval[_])(_: HeaderCarrier, _: ExecutionContext))
       .expects(*, Retrievals.affinityGroup, *, *)
       .returning(Future.successful(Some(AffinityGroup.Agent)))
-
-    (mockAuthConnector.authorise(_: Predicate, _: Retrieval[_])(_: HeaderCarrier, _: ExecutionContext))
-      .expects(*, Retrievals.allEnrolments, *, *)
-      .returning(Future.successful(enrolments))
   }
 
   //noinspection ScalaStyle

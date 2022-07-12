@@ -16,23 +16,13 @@
 
 package crypto
 
+import com.google.common.base.Joiner
 import com.nimbusds.jose.util.Base64URL
+import org.bouncycastle.jcajce.provider.digest.{SHA1, SHA256, SHA3, SHA512}
 
-import java.security.MessageDigest
 import java.net.URI
 import java.security.MessageDigest
 import java.util.Base64
-import java.util.function.Function
-import org.bouncycastle.jcajce.provider.digest.SHA1
-import org.bouncycastle.jcajce.provider.digest.SHA256
-import org.bouncycastle.jcajce.provider.digest.SHA3
-import org.bouncycastle.jcajce.provider.digest.SHA512
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonValue
-import com.google.common.base.Joiner
-import com.nimbusds.jose.util.Base64URL
 
 case class HashMethod(name: String, function: String => String)
 

@@ -20,8 +20,6 @@ import com.nimbusds.jose.JOSEObject
 
 import java.io.{BufferedReader, ByteArrayInputStream, InputStreamReader}
 import java.text.ParseException
-import java.util
-import java.util.{Collections, Enumeration, List}
 import javax.servlet._
 import javax.servlet.http.{HttpServletRequest, HttpServletRequestWrapper, HttpUpgradeHandler}
 
@@ -29,7 +27,7 @@ object JoseUnwrappingFilter extends Filter {
 
   val BODY_JOSE = "BODY_JOSE"
 
-  override def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Boolean = {
+  override def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Unit = {
     val req = request.asInstanceOf[HttpServletRequest]
     if (req.getContentType != null && req.getContentType == "application/jose") {
       val requestWrapper = JoseRequestWrapper(req)
@@ -91,16 +89,17 @@ case class JoseRequestWrapper(delegate: HttpServletRequest,
       delegate.getHeader(name)
     }
   }
-
-  override def getHeaders(name: String): util.Enumeration[String] = {
-    if (name.equalsIgnoreCase("content-type")){
-      Collections.enumeration(util.List.of(getContentType))
-    } else if (name.equalsIgnoreCase("content-length")){
-      Collections.enumeration(util.List.of(getContentLength.toString))
-    } else {
-      delegate.getHeaders(name)
-    }
-  }
+//  import java.util
+//  import java.util.{Collections, Enumeration, List}
+//  override def getHeaders(name: String): util.Enumeration[String] = {
+//    if (name.equalsIgnoreCase("content-type")){
+//      Collections.enumeration(util.List.of(getContentType))
+//    } else if (name.equalsIgnoreCase("content-length")){
+//      Collections.enumeration(util.List.of(getContentLength.toString))
+//    } else {
+//      delegate.getHeaders(name)
+//    }
+//  }
 }
 
 object JoseRequestWrapper {

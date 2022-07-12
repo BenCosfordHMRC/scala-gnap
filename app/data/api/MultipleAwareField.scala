@@ -25,9 +25,13 @@ case class MultipleAwareField[Data](multiple: Boolean, data: Seq[Data]){
 
 object MultipleAwareField {
 
-  def apply[SingleData](singleton: SingleData): MultipleAwareField[SingleData] = MultipleAwareField[SingleData](multiple = false, data = singleton)
+  def apply[SingleData](singleton: SingleData): MultipleAwareField[SingleData] = {
+    MultipleAwareField[SingleData](multiple = false, data = Seq(singleton))
+  }
 
-  def apply[MultipleData](items: Seq[MultipleData]): MultipleAwareField[MultipleData] = MultipleAwareField[MultipleData](multiple = true, data = items)
+  def apply[MultipleData](items: Seq[MultipleData]): MultipleAwareField[MultipleData] = {
+    MultipleAwareField[MultipleData](multiple = true, data = items)
+  }
 
   def apply[OutputData,InputData](input: MultipleAwareField[InputData], function: InputData => OutputData): Option[MultipleAwareField[OutputData]] = {
 

@@ -18,11 +18,7 @@ package crypto
 import java.io.UnsupportedEncodingException
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
-import java.security.InvalidKeyException
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
-import java.security.Signature
-import java.security.SignatureException
+import java.security.{InvalidKeyException, MessageDigest, NoSuchAlgorithmException, PublicKey, Signature, SignatureException}
 import java.text.ParseException
 import java.time.Instant
 import java.util
@@ -498,29 +494,36 @@ object SignatureVerifier {
     }
   }
 
-  @throws[JOSEException]
-  private def extractKeyForVerify(jwk: JWK) = if (jwk.isInstanceOf[OctetSequenceKey]) jwk.toOctetSequenceKey.toSecretKey
-  else if (jwk.isInstanceOf[RSAKey]) jwk.toRSAKey.toPublicKey
-  else if (jwk.isInstanceOf[ECKey]) jwk.toECKey.toECPublicKey
-  else if (jwk.isInstanceOf[OctetKeyPair]) jwk.toOctetKeyPair.toPublicKey
-  else throw new JOSEException("Unable to create signer for key: " + jwk)
+  private def extractKeyForVerify(jwk: JWK): java.security.Key = {
+    jwk match {
+      case key: OctetSequenceKey => jwk.toOctetSequenceKey.toSecretKey
+      case key: RSAKey => jwk.toRSAKey.toPublicKey
+      case key: ECKey => jwk.toECKey.toECPublicKey
+      case pair: OctetKeyPair => jwk.toOctetKeyPair.toPublicKey
+      case _ => throw new JOSEException("Unable to create signer for key: " + jwk) //TODO change
+    }
+  }
 
   private def checkQueryHash(request: HttpServletRequest, paramsUsed: Seq[String], hashUsed: String): Option[String] = {
-//    if (paramsUsed != null && !Strings.isNullOrEmpty(hashUsed)) {
-//      val hashBase = new util.ArrayList[String]
-//      paramsUsed.forEach((q: String) => {
-//        def foo(q: String) = {
-//          val first = request.getParameter(q)
-//          hashBase.add(UriUtils.encodeQueryParam(q, Charset.defaultCharset) + "=" + UriUtils.encodeQueryParam(first, Charset.defaultCharset))
-//        }
-//
-//        foo(q)
-//      })
-//      val hash = new Hash().SHA256_encode(Joiner.on("&").join(hashBase))
-//      if (!(hash == hashUsed)) throw new RuntimeException("Couldn't validate query hash")
-//      log.info("++ Validated query hash")
-//    }
-    ???
+    if(paramsUsed.nonEmpty && hashUsed.nonEmpty){
+      val hashBase = paramsUsed.map{
+        param =>
+          val first = request.getParameter(param)
+          import java.net.URLEncoder
+          s"${URLEncoder.encode(param, Charset.defaultCharset)}=${URLEncoder.encode(first,Charset.defaultCharset())}"
+      }
+      val hash = new Hash().SHA256_encode(hashBase.mkString("&"))
+      if(hash.contains(hashUsed)){
+        log.info("++ Validated query hash")
+        Some(hashUsed)
+      } else {
+        log.info("Couldn't validate query hash")
+        None
+      }
+    } else {
+      log.info("Parameters or hash is emtpy")
+      None
+    }
   }
 
   /**
@@ -528,60 +531,103 @@ object SignatureVerifier {
    * @param req
    */
   def ensureDigest(digestHeader: String, req: HttpServletRequest): Boolean = {
-    if (digestHeader != null) if (digestHeader.startsWith("SHA=")) {
-      val savedBody = req.getAttribute(DigestWrappingFilter.BODY_BYTES).asInstanceOf[Array[Byte]]
-      if (savedBody == null || savedBody.length == 0) throw new RuntimeException("Bad Digest, no body")
-      val actualHash = new Hash().SHA1_digest(savedBody)
-      val incomingHash = digestHeader.substring("SHA=".length)
-      if (!(actualHash.contains(incomingHash))) throw new RuntimeException("Bad Digest, no biscuit")
+    if(digestHeader.nonEmpty){
+      if (digestHeader.startsWith("SHA=")) {
+        val savedBody = req.getAttribute(DigestWrappingFilter.BODY_BYTES).asInstanceOf[Array[Byte]]
+        if(savedBody == null || savedBody.length == 0){
+          log.info("Bad digest, no body")
+          false
+        } else {
+          val actualHash = new Hash().SHA1_digest(savedBody)
+          val incomingHash = digestHeader.substring("SHA=".length)
+          if(actualHash.contains(incomingHash)){
+            log.info("++ Verified body digest")
+            true
+          } else {
+            log.info("Bad digest, no biscuit")
+            false
+          }
+        }
+      } else {
+        log.info("Bad digest, unknown algorithm")
+        false
+      }
+    } else {
+      log.info("Digest is empty")
+      false
     }
-    else throw new RuntimeException("Bad digest, unknown algorithm")
-    log.info("++ Verified body digest")
-    false
   }
 
-  def ensureContentDigest(contentDigestHeader: Dictionary, req: HttpServletRequest): Unit = {
-//    val savedBody = req.getAttribute(DigestWrappingFilter.BODY_BYTES).asInstanceOf[Array[Byte]]
-//    if (savedBody == null || savedBody.length == 0) if (contentDigestHeader == null)
-//    else throw new RuntimeException("Bad Content Digest, no body")
-//    else {
-//      val m = contentDigestHeader.get
-//      import scala.collection.JavaConversions._
-//      for (alg <- m.keySet) {
-//        if (alg == "sha-512") {
-//          val sha = new SHA512.Digest
-//          val digest = sha.digest(savedBody)
-//          val expected = ByteBuffer.wrap(digest)
-//          val actual = m.get(alg).asInstanceOf[ByteSequenceItem].get
-//          if (!(expected == actual)) throw new RuntimeException("Bad Content Digest, no biscuit")
-//        }
-//        else if (alg == "sha-256") {
-//          val sha = new SHA256.Digest
-//          val digest = sha.digest(savedBody)
-//          val expected = ByteBuffer.wrap(digest)
-//          val actual = m.get(alg).asInstanceOf[ByteSequenceItem].get
-//          if (!(expected == actual)) throw new RuntimeException("Bad Content Digest, no biscuit")
-//        }
-//        else throw new RuntimeException("Bad Content digest, unknown algorithm: " + alg)
-//      }
-//      log.info("++ Verified body content-digest")
-//    }
-    ???
+  val sha512 = "sha-512"
+  val sha256 = "sha-256"
+
+  def ensureContentDigest(contentDigestHeader: Dictionary, req: HttpServletRequest): Boolean = {
+
+    val savedBody = req.getAttribute(DigestWrappingFilter.BODY_BYTES).asInstanceOf[Array[Byte]]
+
+    if(savedBody == null || savedBody.length == 0 || contentDigestHeader == null){
+      if(contentDigestHeader == null){
+        log.info("No content digest header")
+        false
+      } else {
+        log.info("Bad Content Digest, no body")
+        false
+      }
+    } else {
+      val contentDigestMap: util.Map[String, ListElement[_]] = contentDigestHeader.get
+
+      def ensureDigest(alg: String): Boolean = {
+        val sha = if (alg == sha512) new SHA512.Digest else new SHA256.Digest
+        val digest = sha.digest(savedBody)
+        val expected = ByteBuffer.wrap(digest)
+        val actual = contentDigestMap.get(alg).asInstanceOf[ByteSequenceItem].get
+
+        if (expected == actual) {
+          log.info("++ Verified body content-digest")
+          true
+        } else {
+          log.info("Bad Content Digest, no biscuit")
+          false
+        }
+      }
+
+      contentDigestMap.keySet().map {
+        case alg@"sha-512" => ensureDigest(alg)
+        case alg@"sha-256" => ensureDigest(alg)
+        case alg =>
+          log.info(s"Bad Content digest, unknown algorithm: $alg")
+          false
+      }.forall(_ == true)
+    }
   }
 
-  def extractBoundAccessToken(auth: String, oauthPop: String): String = { // if there's an OAuth PoP style presentation, use that header's internal value
-    if (!Strings.isNullOrEmpty(oauthPop)) try {
-      val jwt = SignedJWT.parse(oauthPop)
-      val claims = jwt.getJWTClaimsSet
-      val at = claims.getStringClaim("at")
-      Strings.emptyToNull(at)
-    } catch {
-      case e: ParseException =>
-        log.error("Unable to parse OAuth PoP to look for token", e)
-        null
+  def extractBoundAccessToken(auth: String, oauthPop: String): Option[String] = { // if there's an OAuth PoP style presentation, use that header's internal value
+    if(oauthPop.nonEmpty) {
+      try {
+        val jwt = SignedJWT.parse(oauthPop)
+        val claims = jwt.getJWTClaimsSet
+        val at = claims.getStringClaim("at")
+        if (at.nonEmpty) {
+          log.info("Extracting Access token")
+          Some(at)
+        } else {
+          log.info("at is empty")
+          None
+        }
+      } catch {
+        case e: ParseException =>
+          log.error("Unable to parse OAuth PoP to look for token", e)
+          None
+      }
+    } else if(auth.startsWith("GNAP ")){
+      log.info("Extracting GNAP token")
+      Some(auth.substring("GNAP ".length))
+    } else if (Strings.isNullOrEmpty(auth)){
+      log.info("auth is empty")
+      None
+    } else {
+      log.info("oauthPop is empty")
+      None
     }
-    else if (Strings.isNullOrEmpty(auth)) null
-    else if (!auth.startsWith("GNAP ")) null
-    else auth.substring("GNAP ".length)
   }
 }
